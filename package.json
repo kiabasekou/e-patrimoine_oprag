@@ -1,0 +1,12 @@
+{
+  "name": "gestion-patrimoine",
+  "version": "1.0.0",
+  "description": "Projet Django - SCSS Bootstrap personnalisé",
+  "scripts": {
+    "sass": "sass static/scss/app.scss static/css/app.css --no-source-map --style=compressed",
+    "sass:watch": "sass --watch static/scss/app.scss:static/css/app.css --no-source-map"
+  },
+  "devDependencies": {
+    "sass": "^1.69.0"
+  }
+}

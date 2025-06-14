@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}{{ bien.nom }} - Détails{% endblock %}
+
+{% block extra_css %}
+<style>
+    .property-list dt {
+        font-weight: 500;
+        color: #555;
+    }
+    .property-list dd {
+        margin-bottom: 0.8rem;
+    }
+    .history-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .history-timeline::before {
+        content: '';
+        position: absolute;
+        left: 9px;
+        top: 0;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .history-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .history-dot {
+        position: absolute;
+        left: -30px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #0d6efd;
+        top: 0;
+    }
+    .technical-properties {
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ bien.nom }}</h1>
+    <div class="btn-group">
+        <a href="{% url 'biens:bien_update' bien.pk %}" class="btn btn-warning">
+            <i class="fas fa-edit me-2"></i>Modifier
+        </a>
+        <a href="{% url 'biens:bien_delete' bien.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>Supprimer
+        </a>
+        <a href="{% url 'biens:bien_list' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations générales
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row property-list">
+                    <dt class="col-sm-4">Catégorie</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-primary">{{ bien.categorie.nom }}</span>
+                        {% if bien.sous_categorie %}
+                            <span class="badge bg-info">{{ bien.sous_categorie.nom }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Entité</dt>
+                    <dd class="col-sm-8">{{ bien.entite.nom }}</dd>
+
+                    <dt class="col-sm-4">Valeur initiale</dt>
+                    <dd class="col-sm-8">{{ bien.valeur_initiale|floatformat:0 }} FCFA</dd>
+
+                    <dt class="col-sm-4">Date d'acquisition</dt>
+                    <dd class="col-sm-8">{{ bien.date_acquisition|date:"d F Y" }}</dd>
+
+                    {% if bien.numero_serie %}
+                        <dt class="col-sm-4">Numéro de série</dt>
+                        <dd class="col-sm-8">{{ bien.numero_serie }}</dd>
+                    {% endif %}
+
+                    {% if bien.duree_amortissement %}
+                        <dt class="col-sm-4">Durée d'amortissement</dt>
+                        <dd class="col-sm-8">{{ bien.duree_amortissement }} année(s)</dd>
+                    {% endif %}
+
+                    {% if bien.statut_juridique %}
+                        <dt class="col-sm-4">Statut juridique</dt>
+                        <dd class="col-sm-8">{{ bien.statut_juridique }}</dd>
+                    {% endif %}
+
+                    {% if bien.commune %}
+                        <dt class="col-sm-4">Localisation</dt>
+                        <dd class="col-sm-8">
+                            {{ bien.commune.nom }}
+                            {% if bien.commune.departement %}
+                                - {{ bien.commune.departement.nom }}
+                                {% if bien.commune.departement.province %}
+                                    - {{ bien.commune.departement.province.nom }}
+                                {% endif %}
+                            {% endif %}
+                        </dd>
+                    {% endif %}
+                </dl>
+
+                {% if bien.justificatif %}
+                    <div class="mt-3">
+                        <h6>Justificatif</h6>
+                        <a href="{{ bien.justificatif.url }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-file-alt me-2"></i>Voir le document
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if bien.description %}
+                    <div class="mt-3">
+                        <h6>Description</h6>
+                        <p>{{ bien.description }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Caractéristiques techniques spécifiques au type de bien -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs me-2"></i>Caractéristiques techniques
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="technical-properties">
+                    <!-- Ces sections seront affichées selon le type de bien -->
+                    {% if profil_vehicule %}
+                        <h6>Informations du véhicule</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Marque</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.marque }}</dd>
+                            <dt class="col-sm-4">Modèle</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.modele }}</dd>
+                            <dt class="col-sm-4">Immatriculation</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.immatriculation }}</dd>
+                            <dt class="col-sm-4">Date de fabrication</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.date_fabrication|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-4">Dernière maintenance</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.date_derniere_maintenance|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-4">Prochaine maintenance</dt>
+                            <dd class="col-sm-8">{{ profil_vehicule.prochaine_maintenance|date:"d/m/Y" }}</dd>
+                        </dl>
+                    {% elif profil_immeuble %}
+                        <h6>Informations du bâtiment</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Surface</dt>
+                            <dd class="col-sm-8">{{ profil_immeuble.surface }} m²</dd>
+                            <dt class="col-sm-4">Nombre d'étages</dt>
+                            <dd class="col-sm-8">{{ profil_immeuble.nb_etages }}</dd>
+                            <dt class="col-sm-4">Année de construction</dt>
+                            <dd class="col-sm-8">{{ profil_immeuble.annee_construction }}</dd>
+                            <dt class="col-sm-4">Sécurité</dt>
+                            <dd class="col-sm-8">{{ profil_immeuble.securite }}</dd>
+                        </dl>
+                    {% elif profil_informatique %}
+                        <h6>Informations du matériel informatique</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Type d'équipement</dt>
+                            <dd class="col-sm-8">{{ profil_informatique.type_equipement }}</dd>
+                            <dt class="col-sm-4">Marque</dt>
+                            <dd class="col-sm-8">{{ profil_informatique.marque }}</dd>
+                            <dt class="col-sm-4">Modèle</dt>
+                            <dd class="col-sm-8">{{ profil_informatique.modele }}</dd>
+                            <dt class="col-sm-4">Date de fabrication</dt>
+                            <dd class="col-sm-8">{{ profil_informatique.date_fabrication|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-4">Fin de garantie</dt>
+                            <dd class="col-sm-8">{{ profil_informatique.fin_garantie|date:"d/m/Y" }}</dd>
+                        </dl>
+                    {% elif profil_equipement_medical %}
+                        <h6>Informations de l'équipement médical</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Fabricant</dt>
+                            <dd class="col-sm-8">{{ profil_equipement_medical.fabricant }}</dd>
+                            <dt class="col-sm-4">Modèle</dt>
+                            <dd class="col-sm-8">{{ profil_equipement_medical.modele }}</dd>
+                            <dt class="col-sm-4">Date d'installation</dt>
+                            <dd class="col-sm-8">{{ profil_equipement_medical.date_installation|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-4">Dernière maintenance</dt>
+                            <dd class="col-sm-8">{{ profil_equipement_medical.date_derniere_maintenance|date:"d/m/Y" }}</dd>
+                            <dt class="col-sm-4">Fin de garantie</dt>
+                            <dd class="col-sm-8">{{ profil_equipement_medical.fin_garantie|date:"d/m/Y" }}</dd>
+                        </dl>
+                    {% elif profil_mobilier %}
+                        <h6>Informations du mobilier</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Type</dt>
+                            <dd class="col-sm-8">{{ profil_mobilier.type }}</dd>
+                            <dt class="col-sm-4">Matériau</dt>
+                            <dd class="col-sm-8">{{ profil_mobilier.materiau }}</dd>
+                            <dt class="col-sm-4">Année de fabrication</dt>
+                            <dd class="col-sm-8">{{ profil_mobilier.annee_fabrication }}</dd>
+                            <dt class="col-sm-4">Dimensions</dt>
+                            <dd class="col-sm-8">{{ profil_mobilier.dimensions }}</dd>
+                        </dl>
+                    {% elif profil_terrain %}
+                        <h6>Informations du terrain</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Superficie</dt>
+                            <dd class="col-sm-8">{{ profil_terrain.superficie }} m²</dd>
+                            <dt class="col-sm-4">Type de terrain</dt>
+                            <dd class="col-sm-8">{{ profil_terrain.type_terrain }}</dd>
+                            <dt class="col-sm-4">Usage</dt>
+                            <dd class="col-sm-8">{{ profil_terrain.usage }}</dd>
+                            <dt class="col-sm-4">Caractéristiques</dt>
+                            <dd class="col-sm-8">{{ profil_terrain.caracteristiques }}</dd>
+                        </dl>
+                    {% elif profil_consommable %}
+                        <h6>Informations des consommables</h6>
+                        <dl class="row property-list">
+                            <dt class="col-sm-4">Type</dt>
+                            <dd class="col-sm-8">{{ profil_consommable.type }}</dd>
+                            <dt class="col-sm-4">Quantité initiale</dt>
+                            <dd class="col-sm-8">{{ profil_consommable.quantite_initiale }}</dd>
+                            <dt class="col-sm-4">Stock de sécurité</dt>
+                            <dd class="col-sm-8">{{ profil_consommable.stock_securite }}</dd>
+                            <dt class="col-sm-4">Fournisseur</dt>
+                            <dd class="col-sm-8">{{ profil_consommable.fournisseur }}</dd>
+                        </dl>
+                    {% else %}
+                        <p class="text-muted">Aucune caractéristique technique spécifique disponible pour ce bien.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <!-- Historique des valeurs -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>Historique des valeurs
+                </h5>
+                <button type="button" class="btn btn-sm btn-light btn-ajouter-valeur">
+                    <i class="fas fa-plus me-1"></i>Ajouter
+                </button>
+            </div>
+            <div class="card-body">
+                {% if historiques %}
+                    <div class="history-timeline">
+                        {% for history in historiques %}
+                            <div class="history-item">
+                                <div class="history-dot"></div>
+                                <div class="card">
+                                    <div class="card-header bg-light py-1 px-2">
+                                        <small class="text-muted">{{ history.date|date:"d F Y" }}</small>
+                                    </div>
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-0">{{ history.valeur|floatformat:0 }} FCFA</h5>
+                                        {% if history.valeur > bien.valeur_initiale %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-arrow-up me-1"></i>
+                                                +{{ history.valeur|sub:bien.valeur_initiale|floatformat:0 }}
+                                            </span>
+                                        {% elif history.valeur < bien.valeur_initiale %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-arrow-down me-1"></i>
+                                                {{ history.valeur|sub:bien.valeur_initiale|floatformat:0 }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3"></i>
+                            <p>Aucun historique de valeur disponible</p>
+                            <button type="button" class="btn btn-outline-success btn-ajouter-valeur">
+                                <i class="fas fa-plus me-2"></i>Ajouter une valeur
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Responsables du bien -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-tie me-2"></i>Responsables
+                </h5>
+                <button type="button" class="btn btn-sm btn-light btn-assigner-responsable">
+                    <i class="fas fa-user-plus me-1"></i>Assigner
+                </button>
+            </div>
+            <div class="card-body">
+                {% if bien.responsabilites.all %}
+                    <div class="list-group list-group-flush">
+                        {% for resp in bien.responsabilites.all %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">{{ resp.responsable.prenom }} {{ resp.responsable.nom }}</h6>
+                                    <span class="badge {% if resp.type_affectation == 'permanent' %}bg-success{% else %}bg-info{% endif %}">
+                                        {{ resp.get_type_affectation_display }}
+                                    </span>
+                                </div>
+                                <p class="mb-1 small text-muted">{{ resp.responsable.fonction }} - {{ resp.responsable.corps }}</p>
+                                <p class="mb-1 small">Depuis le {{ resp.date_affectation|date:"d/m/Y" }}</p>
+                                {% if resp.responsable.telephone or resp.responsable.email %}
+                                    <div class="mt-2 small">
+                                        {% if resp.responsable.telephone %}
+                                            <i class="fas fa-phone me-1"></i>{{ resp.responsable.telephone }}
+                                        {% endif %}
+                                        {% if resp.responsable.email %}
+                                            <br><i class="fas fa-envelope me-1"></i>{{ resp.responsable.email }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-user-slash fa-3x mb-3"></i>
+                            <p>Aucun responsable assigné</p>
+                            <button type="button" class="btn btn-outline-primary btn-assigner-responsable">
+                                <i class="fas fa-user-plus me-2"></i>Assigner un responsable
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter Historique Valeur -->
+<div class="modal fade" id="addHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une valeur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="{{ form.date.id_for_label }}" class="form-label">Date d'évaluation</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.valeur.id_for_label }}" class="form-label">Valeur (FCFA)</label>
+                        {{ form.valeur }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Assigner Responsable -->
+<div class="modal fade" id="assignResponsableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'biens:bien_detail' bien.pk %}?action=assigner_responsable">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="assigner_responsable">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assigner un responsable</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Champs du formulaire pour assigner un responsable -->
+                    <div class="mb-3">
+                        <label for="id_responsable" class="form-label">Responsable</label>
+                        <select id="id_responsable" name="responsable" class="form-select" required>
+                            <option value="">-- Sélectionner un responsable --</option>
+                            {% for responsable in all_responsables %}
+                                <option value="{{ responsable.id }}">{{ responsable.prenom }} {{ responsable.nom }} ({{ responsable.fonction }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_type_affectation" class="form-label">Type d'affectation</label>
+                        <select id="id_type_affectation" name="type_affectation" class="form-select" required>
+                            <option value="permanent">Permanent</option>
+                            <option value="temporaire">Temporaire</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_date_affectation" class="form-label">Date d'affectation</label>
+                        <input type="date" id="id_date_affectation" name="date_affectation" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_motif" class="form-label">Motif</label>
+                        <textarea id="id_motif" name="motif" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Assigner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        console.log("jQuery fonctionne!");
+        
+        // Gestion du bouton "Ajouter une valeur"
+        $(".btn-ajouter-valeur").click(function(e) {
+            e.preventDefault();
+            $('#addHistoryModal').modal('show');
+        });
+        
+        // Gestion du bouton "Assigner un responsable"
+        $(".btn-assigner-responsable").click(function(e) {
+            e.preventDefault();
+            $('#assignResponsableModal').modal('show');
+        });
+        
+        // Initialiser la date du jour dans le formulaire d'ajout d'historique
+        if ($("#{{ form.date.id_for_label }}").length) {
+            var today = new Date().toISOString().split('T')[0];
+            $("#{{ form.date.id_for_label }}").val(today);
+        }
+        
+        // Initialiser la date du jour dans le formulaire d'assignation de responsable
+        if ($("#id_date_affectation").length) {
+            var today = new Date().toISOString().split('T')[0];
+            $("#id_date_affectation").val(today);
+        }
+    });
+</script>
+{% endblock %}

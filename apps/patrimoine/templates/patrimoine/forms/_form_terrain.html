@@ -1,0 +1,46 @@
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Caractéristiques du terrain</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.superficie.id_for_label }}" class="form-label">Superficie (m²)</label>
+                    {{ profil_form.superficie }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.type_terrain.id_for_label }}" class="form-label">Type de terrain</label>
+                    {{ profil_form.type_terrain }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.usage.id_for_label }}" class="form-label">Usage</label>
+                    {{ profil_form.usage }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.caracteristiques.id_for_label }}" class="form-label">Caractéristiques</label>
+                    {{ profil_form.caracteristiques }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.accessibilite.id_for_label }}" class="form-label">Accessibilité</label>
+                    {{ profil_form.accessibilite }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.documents_legaux.id_for_label }}" class="form-label">Documents légaux</label>
+                    {{ profil_form.documents_legaux }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

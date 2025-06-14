@@ -1,0 +1,357 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Carte du patrimoine - Gestion du Patrimoine{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 0.25rem;
+    }
+    .map-container {
+        position: relative;
+    }
+    .map-overlay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        max-width: 300px;
+    }
+    .filter-panel {
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .info-box {
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .legend {
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        margin-top: 10px;
+        font-size: 0.9em;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        margin-right: 5px;
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-map-marked-alt me-2"></i>Carte du patrimoine</h1>
+    <div class="btn-group">
+        <a href="{% url 'biens:dashboard' %}" class="btn btn-primary">
+            <i class="fas fa-chart-line me-2"></i>Tableau de bord
+        </a>
+        <a href="{% url 'biens:bien_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-clipboard-list me-2"></i>Liste des biens
+        </a>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="filter-panel">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="filter-categorie" class="form-label">Catégorie</label>
+            <select class="form-select" id="filter-categorie">
+                <option value="all">Toutes les catégories</option>
+                {% for categorie in categories %}
+                    <option value="{{ categorie }}">{{ categorie }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-annee" class="form-label">Année d'acquisition</label>
+            <select class="form-select" id="filter-annee">
+                <option value="all">Toutes les années</option>
+                {% for annee in annees %}
+                    <option value="{{ annee }}">{{ annee }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-province" class="form-label">Province</label>
+            <select class="form-select" id="filter-province">
+                <option value="all">Toutes les provinces</option>
+                {% for province in provinces %}
+                    <option value="{{ province }}">{{ province }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-entite" class="form-label">Entité</label>
+            <select class="form-select" id="filter-entite">
+                <option value="all">Toutes les entités</option>
+                {% for entite in entites %}
+                    <option value="{{ entite }}">{{ entite }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques rapides -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Biens affichés</h6>
+                <h3 id="count-biens">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Communes</h6>
+                <h3 id="count-communes">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Valeur totale</h6>
+                <h3 id="total-valeur">0 FCFA</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6 class="card-title">Catégories</h6>
+                <h3 id="count-categories">0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Carte -->
+<div class="map-container mb-4">
+    <div id="map"></div>
+</div>
+
+<!-- Légende -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Légende</h5>
+    </div>
+    <div class="card-body">
+        <div class="row" id="categorie-legend">
+            <!-- La légende sera générée dynamiquement en JavaScript -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialisation de la carte
+        const map = L.map('map').setView([0.38, 9.45], 6); // Centre sur le Gabon
+        
+        // Fond de carte
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Groupe de marqueurs pour le clustering
+        const markers = L.markerClusterGroup();
+        
+        // Données de la carte
+        const carteData = {{ carte_data|safe }};
+        
+        // Couleurs par catégorie
+        const categorieColors = {};
+        const categories = [];
+        
+        // Fonction pour obtenir une couleur aléatoire
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+        
+        // Attribuer des couleurs aux catégories
+        carteData.forEach(item => {
+            if (!categorieColors[item.categorie]) {
+                categorieColors[item.categorie] = getRandomColor();
+                categories.push(item.categorie);
+            }
+        });
+        
+        // Ajouter les marqueurs
+        carteData.forEach(item => {
+            const marker = L.marker([item.latitude, item.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color: ${categorieColors[item.categorie]}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                }),
+                categorie: item.categorie,
+                annee: item.annee,
+                province_nom: item.province_nom,
+                entite_nom: item.entite_nom
+            });
+            
+            marker.bindPopup(`
+                <div class="info-box">
+                    <h6>${item.commune_nom}</h6>
+                    <p><strong>Catégorie:</strong> ${item.categorie}</p>
+                    <p><strong>Province:</strong> ${item.province_nom}</p>
+                    <p><strong>Entité:</strong> ${item.entite_nom}</p>
+                    <p><strong>Année:</strong> ${item.annee}</p>
+                    <p><strong>Valeur:</strong> ${item.total.toLocaleString()} FCFA</p>
+                </div>
+            `);
+            
+            markers.addLayer(marker);
+        });
+        
+        map.addLayer(markers);
+        
+        // Créer la légende
+        function createLegend() {
+            const legendContainer = document.getElementById('categorie-legend');
+            legendContainer.innerHTML = '';
+            
+            categories.forEach(categorie => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'col-md-4 mb-2';
+                legendItem.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${categorieColors[categorie]};"></div>
+                        <span>${categorie}</span>
+                    </div>
+                `;
+                legendContainer.appendChild(legendItem);
+            });
+        }
+        
+        createLegend();
+        
+        // Mettre à jour les compteurs
+        function updateCounters() {
+            const visibleMarkers = [];
+            const visibleCommunes = new Set();
+            const visibleCategories = new Set();
+            let totalValeur = 0;
+            
+            markers.getLayers().forEach(marker => {
+                if (map.hasLayer(markers) && 
+                    (document.getElementById('filter-categorie').value === 'all' || marker.options.categorie === document.getElementById('filter-categorie').value) &&
+                    (document.getElementById('filter-annee').value === 'all' || marker.options.annee.toString() === document.getElementById('filter-annee').value) &&
+                    (document.getElementById('filter-province').value === 'all' || marker.options.province_nom === document.getElementById('filter-province').value) &&
+                    (document.getElementById('filter-entite').value === 'all' || marker.options.entite_nom === document.getElementById('filter-entite').value)) {
+                    
+                    visibleMarkers.push(marker);
+                    visibleCommunes.add(marker._popup._content.match(/<h6>(.*?)<\/h6>/)[1]);
+                    visibleCategories.add(marker.options.categorie);
+                    
+                    // Extraire la valeur du popup
+                    const valeurMatch = marker._popup._content.match(/Valeur:<\/strong> ([\d,]+) FCFA/);
+                    if (valeurMatch && valeurMatch[1]) {
+                        totalValeur += parseInt(valeurMatch[1].replace(/,/g, ''));
+                    }
+                }
+            });
+            
+            document.getElementById('count-biens').textContent = visibleMarkers.length;
+            document.getElementById('count-communes').textContent = visibleCommunes.size;
+            document.getElementById('count-categories').textContent = visibleCategories.size;
+            document.getElementById('total-valeur').textContent = totalValeur.toLocaleString() + ' FCFA';
+        }
+        
+        // Filtrage des marqueurs
+        function filterMarkers() {
+            const categorieFilter = document.getElementById('filter-categorie').value;
+            const anneeFilter = document.getElementById('filter-annee').value;
+            const provinceFilter = document.getElementById('filter-province').value;
+            const entiteFilter = document.getElementById('filter-entite').value;
+            
+            markers.clearLayers();
+            
+            carteData.forEach(item => {
+                if ((categorieFilter === 'all' || item.categorie === categorieFilter) &&
+                    (anneeFilter === 'all' || item.annee.toString() === anneeFilter) &&
+                    (provinceFilter === 'all' || item.province_nom === provinceFilter) &&
+                    (entiteFilter === 'all' || item.entite_nom === entiteFilter)) {
+                    
+                    const marker = L.marker([item.latitude, item.longitude], {
+                        icon: L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div style="background-color: ${categorieColors[item.categorie]}; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white;"></div>`,
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        }),
+                        categorie: item.categorie,
+                        annee: item.annee,
+                        province_nom: item.province_nom,
+                        entite_nom: item.entite_nom
+                    });
+                    
+                    marker.bindPopup(`
+                        <div class="info-box">
+                            <h6>${item.commune_nom}</h6>
+                            <p><strong>Catégorie:</strong> ${item.categorie}</p>
+                            <p><strong>Province:</strong> ${item.province_nom}</p>
+                            <p><strong>Entité:</strong> ${item.entite_nom}</p>
+                            <p><strong>Année:</strong> ${item.annee}</p>
+                            <p><strong>Valeur:</strong> ${item.total.toLocaleString()} FCFA</p>
+                        </div>
+                    `);
+                    
+                    markers.addLayer(marker);
+                }
+            });
+            
+            map.addLayer(markers);
+            updateCounters();
+        }
+        
+        // Événements de filtrage
+        document.getElementById('filter-categorie').addEventListener('change', filterMarkers);
+        document.getElementById('filter-annee').addEventListener('change', filterMarkers);
+        document.getElementById('filter-province').addEventListener('change', filterMarkers);
+        document.getElementById('filter-entite').addEventListener('change', filterMarkers);
+        
+        // Initialiser les compteurs
+        updateCounters();
+    });
+</script>
+{% endblock %}

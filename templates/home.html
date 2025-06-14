@@ -1,0 +1,112 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Accueil - Gestion du Patrimoine{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="p-5 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold">Système de Gestion du Patrimoine</h1>
+                <p class="col-md-12 fs-4">
+                    Bienvenue dans l'application de gestion du patrimoine. 
+                    Gérez facilement l'inventaire des biens, leur valeur et leur localisation.
+                </p>
+                <a href="{% url 'biens:bien_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>Voir l'inventaire
+                </a>
+                <a href="{% url 'biens:ajouter_bien_complet' %}" class="btn btn-success btn-lg ms-2">
+                    <i class="fas fa-plus me-2"></i>Ajouter un bien
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h4 class="my-0 fw-normal">Statistiques Rapides</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <h2 class="display-6 text-primary">{{ stats.biens_count|default:"0" }}</h2>
+                            <p class="lead">Biens enregistrés</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <h2 class="display-6 text-success">{{ stats.total_value|floatformat:0|default:"0" }}</h2>
+                            <p class="lead">Valeur totale (FCFA)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <h2 class="display-6 text-info">{{ stats.categories_count|default:"0" }}</h2>
+                            <p class="lead">Catégories</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="border rounded p-3 text-center">
+                            <h2 class="display-6 text-warning">{{ stats.entities_count|default:"0" }}</h2>
+                            <p class="lead">Entités</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'biens:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i>Voir le tableau de bord complet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h4 class="my-0 fw-normal">Inventaire</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <i class="fas fa-clipboard-list fa-4x text-primary mb-3 align-self-center"></i>
+                <p>Consultez la liste complète des biens patrimoniaux, avec leurs catégories et valeurs.</p>
+                <a href="{% url 'biens:bien_list' %}" class="btn btn-outline-primary mt-auto">
+                    Accéder à l'inventaire
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h4 class="my-0 fw-normal">Tableau de bord</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <i class="fas fa-chart-pie fa-4x text-success mb-3 align-self-center"></i>
+                <p>Visualisez les statistiques et répartitions des biens par catégories, entités et localisation.</p>
+                <a href="{% url 'biens:dashboard' %}" class="btn btn-outline-success mt-auto">
+                    Voir les statistiques
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4 shadow-sm h-100">
+            <div class="card-header bg-info text-white">
+                <h4 class="my-0 fw-normal">Carte</h4>
+            </div>
+            <div class="card-body d-flex flex-column">
+                <i class="fas fa-map-marked-alt fa-4x text-info mb-3 align-self-center"></i>
+                <p>Explorez la répartition géographique des biens sur une carte interactive.</p>
+                <a href="{% url 'biens:carte' %}" class="btn btn-outline-info mt-auto">
+                    Consulter la carte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```

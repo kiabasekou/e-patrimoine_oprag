@@ -1,0 +1,36 @@
+@use "sass:map";
+
+// 🎨 Palette de couleurs personnalisée
+$theme-colors: (
+  "primary": #002F5F,
+  "secondary": #4AA3DF,
+  "success": #27AE60,
+  "danger": #E74C3C,
+  "warning": #F1C40F,
+  "light": #F5F6FA,
+  "gray-600": #B0B4BB
+);
+
+// 🖋️ Typographie
+$font-family-sans-serif: 'Open Sans', sans-serif;
+$headings-font-family: 'Poppins', sans-serif;
+
+// 🧩 Options d’arrondi et ombres
+$border-radius: 0.5rem;
+$btn-border-radius: 0.5rem;
+$input-border-radius: 0.5rem;
+$card-border-radius: 0.5rem;
+
+$box-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+// 📦 Charger Bootstrap avec les overrides
+@use "../../node_modules/bootstrap/scss/bootstrap" with (
+  $theme-colors: $theme-colors,
+  $font-family-sans-serif: $font-family-sans-serif,
+  $headings-font-family: $headings-font-family,
+  $border-radius: $border-radius,
+  $btn-border-radius: $btn-border-radius,
+  $input-border-radius: $input-border-radius,
+  $card-border-radius: $card-border-radius
+);

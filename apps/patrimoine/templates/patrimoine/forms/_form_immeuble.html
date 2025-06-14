@@ -1,0 +1,34 @@
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Caractéristiques de l'immeuble</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.surface.id_for_label }}" class="form-label">Surface (m²)</label>
+                    {{ profil_form.surface }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.nb_etages.id_for_label }}" class="form-label">Nombre d'étages</label>
+                    {{ profil_form.nb_etages }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.annee_construction.id_for_label }}" class="form-label">Année de construction</label>
+                    {{ profil_form.annee_construction }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.securite.id_for_label }}" class="form-label">Sécurité</label>
+                    {{ profil_form.securite }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

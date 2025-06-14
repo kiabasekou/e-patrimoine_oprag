@@ -1,0 +1,196 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Inventaire des Biens - Gestion du Patrimoine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .table-responsive {
+        min-height: 400px;
+    }
+    .filter-panel {
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-clipboard-list me-2"></i>Inventaire des Biens</h1>
+    <a href="{% url 'biens:ajouter_bien_complet' %}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Ajouter un bien
+    </a>
+</div>
+
+<div class="filter-panel">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="q" class="form-label">Recherche</label>
+            <input type="text" class="form-control" id="q" name="q" value="{{ search_query }}" 
+                   placeholder="Nom, catégorie...">
+        </div>
+        <div class="col-md-3">
+            <label for="categorie" class="form-label">Catégorie</label>
+            <select class="form-select" id="categorie" name="categorie">
+                <option value="">Toutes les catégories</option>
+                {% for categorie in categories %}
+                    <option value="{{ categorie.id }}" 
+                        {% if request.GET.categorie == categorie.id|stringformat:'i' %}selected{% endif %}>
+                        {{ categorie.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="entite" class="form-label">Entité</label>
+            <select class="form-select" id="entite" name="entite">
+                <option value="">Toutes les entités</option>
+                {% for entite in entites %}
+                    <option value="{{ entite.id }}" 
+                        {% if request.GET.entite == entite.id|stringformat:'i' %}selected{% endif %}>
+                        {{ entite.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary me-2 w-100">
+                <i class="fas fa-filter me-2"></i>Filtrer
+            </button>
+            <a href="{% url 'biens:bien_list' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-times me-2"></i>Réinitialiser
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Catégorie</th>
+                        <th>Entité</th>
+                        <th>Valeur (FCFA)</th>
+                        <th>Date acquisition</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bien in biens %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'biens:bien_detail' bien.pk %}" class="fw-bold text-decoration-none">
+                                {{ bien.nom }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-info text-dark">{{ bien.categorie.nom }}</span>
+                            {% if bien.sous_categorie %}
+                                <span class="badge bg-light text-dark">{{ bien.sous_categorie.nom }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ bien.entite.nom }}</td>
+                        <td class="text-end">{{ bien.valeur_initiale|floatformat:0 }}</td>
+                        <td>{{ bien.date_acquisition|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'biens:bien_detail' bien.pk %}" 
+                                   class="btn btn-outline-primary" title="Détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'biens:bien_update' bien.pk %}" 
+                                   class="btn btn-outline-warning" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'biens:bien_delete' bien.pk %}" 
+                                   class="btn btn-outline-danger" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <p>Aucun bien trouvé</p>
+                                {% if search_query %}
+                                    <p>Essayez de modifier vos critères de recherche</p>
+                                    <a href="{% url 'biens:bien_list' %}" class="btn btn-outline-primary">
+                                        Réinitialiser la recherche
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'biens:ajouter_bien_complet' %}" class="btn btn-success">
+                                        <i class="fas fa-plus me-2"></i>Ajouter un bien
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="card-footer">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Soumettre le formulaire lorsqu'un select change
+        $('#categorie, #entite').change(function() {
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+{% endblock %}

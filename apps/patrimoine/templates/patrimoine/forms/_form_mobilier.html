@@ -1,0 +1,46 @@
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Caractéristiques du mobilier</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.type.id_for_label }}" class="form-label">Type</label>
+                    {{ profil_form.type }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.materiau.id_for_label }}" class="form-label">Matériau</label>
+                    {{ profil_form.materiau }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.annee_fabrication.id_for_label }}" class="form-label">Année de fabrication</label>
+                    {{ profil_form.annee_fabrication }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.dimensions.id_for_label }}" class="form-label">Dimensions</label>
+                    {{ profil_form.dimensions }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.fabricant.id_for_label }}" class="form-label">Fabricant</label>
+                    {{ profil_form.fabricant }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.couleur.id_for_label }}" class="form-label">Couleur</label>
+                    {{ profil_form.couleur }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

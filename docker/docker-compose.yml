@@ -1,0 +1,260 @@
+# docker-compose.yml
+version: '3.9'
+
+services:
+  # Base de données PostgreSQL avec PostGIS pour la géolocalisation
+  postgres:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: epatrimoine_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-epatrimoine}
+      POSTGRES_USER: ${DB_USER:-oprag}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=fr_FR.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-oprag}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # Redis pour le cache et Celery
+  redis:
+    image: redis:7-alpine
+    container_name: epatrimoine_redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # Application Django
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=${ENVIRONMENT:-development}
+    container_name: epatrimoine_web
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 2 --timeout 120
+      "
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgis://${DB_USER:-oprag}:${DB_PASSWORD:-secure_password}@postgres:5432/${DB_NAME:-epatrimoine}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - DJANGO_SETTINGS_MODULE=config.settings.${ENVIRONMENT:-development}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # Celery Worker pour les tâches asynchrones
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epatrimoine_celery_worker
+    command: celery -A config worker -l info --concurrency=4
+    volumes:
+      - .:/app
+      - logs_volume:/app/logs
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgis://${DB_USER:-oprag}:${DB_PASSWORD:-secure_password}@postgres:5432/${DB_NAME:-epatrimoine}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - DJANGO_SETTINGS_MODULE=config.settings.${ENVIRONMENT:-development}
+    depends_on:
+      - postgres
+      - redis
+      - web
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # Celery Beat pour les tâches périodiques
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epatrimoine_celery_beat
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+      - logs_volume:/app/logs
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgis://${DB_USER:-oprag}:${DB_PASSWORD:-secure_password}@postgres:5432/${DB_NAME:-epatrimoine}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - DJANGO_SETTINGS_MODULE=config.settings.${ENVIRONMENT:-development}
+    depends_on:
+      - postgres
+      - redis
+      - web
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # Nginx pour servir les fichiers statiques et faire du reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: epatrimoine_nginx
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/static
+      - media_volume:/media
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+
+  # ElasticSearch pour la recherche avancée (optionnel)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: epatrimoine_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+    profiles:
+      - search
+
+  # Kibana pour visualiser les données ElasticSearch (optionnel)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.1
+    container_name: epatrimoine_kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+    profiles:
+      - search
+
+  # Flower pour monitorer Celery (développement)
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epatrimoine_flower
+    command: celery -A config flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgis://${DB_USER:-oprag}:${DB_PASSWORD:-secure_password}@postgres:5432/${DB_NAME:-epatrimoine}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - DJANGO_SETTINGS_MODULE=config.settings.${ENVIRONMENT:-development}
+    depends_on:
+      - celery_worker
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+    profiles:
+      - dev
+
+  # MailHog pour tester les emails en développement
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: epatrimoine_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+    profiles:
+      - dev
+
+  # Backup automatique de la base de données
+  postgres_backup:
+    image: prodrigestivill/postgres-backup-local:15-alpine
+    container_name: epatrimoine_postgres_backup
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${DB_NAME:-epatrimoine}
+      - POSTGRES_USER=${DB_USER:-oprag}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secure_password}
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - epatrimoine_network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+  logs_volume:
+  elasticsearch_data:
+
+networks:
+  epatrimoine_network:
+    driver: bridge
+
+# docker-compose.override.yml (pour le développement)
+# Ce fichier sera automatiquement chargé en développement
+# Il contient les configurations spécifiques au développement

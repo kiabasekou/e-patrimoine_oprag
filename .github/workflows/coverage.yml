@@ -1,0 +1,40 @@
+name: Coverage to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]  # ou la branche par défaut
+
+jobs:
+  publish-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true  # pour push
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install coverage
+          pip install -r requirements.txt
+
+      - name: Run tests and generate coverage report
+        run: |
+          coverage run --source=patrimoine manage.py test
+          coverage html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./htmlcov
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'

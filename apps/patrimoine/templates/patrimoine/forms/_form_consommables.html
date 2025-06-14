@@ -1,0 +1,46 @@
+
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Caractéristiques des consommables</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.type.id_for_label }}" class="form-label">Type</label>
+                    {{ profil_form.type }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.quantite_initiale.id_for_label }}" class="form-label">Quantité initiale</label>
+                    {{ profil_form.quantite_initiale }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.stock_securite.id_for_label }}" class="form-label">Stock de sécurité</label>
+                    {{ profil_form.stock_securite }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.unite.id_for_label }}" class="form-label">Unité</label>
+                    {{ profil_form.unite }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.fournisseur.id_for_label }}" class="form-label">Fournisseur</label>
+                    {{ profil_form.fournisseur }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="{{ profil_form.caracteristiques.id_for_label }}" class="form-label">Caractéristiques</label>
+                    {{ profil_form.caracteristiques }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

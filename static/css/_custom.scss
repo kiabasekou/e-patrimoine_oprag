@@ -1,0 +1,13 @@
+
+// static/scss/_custom.scss
+
+// Overrides Bootstrap avant inclusion
+$theme-colors: (
+  "primary":   #0056b3,
+  "secondary": #ff8800
+);
+$body-bg: #f5f7fa;
+$font-family-base: 'Inter', sans-serif;
+
+// Import explicite depuis node_modules
+@import "../node_modules/bootstrap/scss/bootstrap";
