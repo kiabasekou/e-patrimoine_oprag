@@ -1,5 +1,5 @@
 """
-ASGI config for patrimoine_project project.
+ASGI config for SYGEP-OPRAG.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -9,8 +9,13 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 
 import os
 
-from django.core.asgi import get_asgi_application
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").lower()
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'patrimoine_project.settings')
+
+from django.core.asgi import get_asgi_application
+os.environ.setdefault(
+    "DJANGO_SETTINGS_MODULE",
+    f"config.settings.{ENVIRONMENT}" if ENVIRONMENT in {"development", "testing", "staging", "production"} else "config.settings.development",
+)
 
 application = get_asgi_application()
