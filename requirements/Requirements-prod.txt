@@ -1,0 +1,115 @@
+# =====================================================
+# E-PATRIMOINE OPRAG - Production Requirements
+# =====================================================
+# Optimized for production deployment
+# Only essential packages included
+
+# =====================================================
+# CORE DJANGO
+# =====================================================
+Django==5.0.1
+django-environ==0.11.2
+python-decouple==3.8
+
+# =====================================================
+# DATABASE
+# =====================================================
+psycopg2==2.9.9                        # No binary for production
+dj-database-url==2.1.0
+django-db-connection-pool==1.2.5       # Connection pooling
+
+# =====================================================
+# ESSENTIAL DJANGO PACKAGES
+# =====================================================
+django-model-utils==4.3.1
+django-crispy-forms==2.1
+crispy-bootstrap5==2023.10
+
+# =====================================================
+# REST API (PRODUCTION)
+# =====================================================
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.3.1
+django-filter==23.5
+
+# =====================================================
+# AUTHENTICATION & SECURITY
+# =====================================================
+django-guardian==2.4.0
+django-otp==1.3.0
+qrcode==7.4.2
+cryptography==41.0.7
+
+# =====================================================
+# CACHING (PRODUCTION)
+# =====================================================
+django-redis==5.4.0
+redis==5.0.1
+hiredis==2.3.2
+django-cacheops==7.0.2
+
+# =====================================================
+# ASYNC TASKS (PRODUCTION)
+# =====================================================
+celery==5.3.4
+django-celery-beat==2.5.0
+django-celery-results==2.5.1
+kombu==5.3.4
+
+# =====================================================
+# FILE HANDLING (PRODUCTION)
+# =====================================================
+Pillow==10.2.0
+django-storages==1.14.2
+boto3==1.34.14
+whitenoise==6.6.0
+
+# =====================================================
+# DATA HANDLING
+# =====================================================
+django-import-export==3.3.5
+openpyxl==3.1.2
+xlsxwriter==3.1.9
+
+# =====================================================
+# MONITORING (PRODUCTION)
+# =====================================================
+sentry-sdk==1.39.2
+python-json-logger==2.0.7
+django-prometheus==2.3.1               # Prometheus metrics
+
+# =====================================================
+# DEPLOYMENT
+# =====================================================
+gunicorn==21.2.0
+gevent==23.9.1                         # Async workers
+greenlet==3.0.3                        # Concurrency
+newrelic==9.5.0                        # APM (optional)
+
+# =====================================================
+# SECURITY (PRODUCTION)
+# =====================================================
+django-csp==3.7
+django-permissions-policy==4.18
+django-ratelimit==4.1.0
+bleach==6.1.0
+
+# =====================================================
+# HISTORY & AUDIT
+# =====================================================
+django-simple-history==3.4.0
+
+# =====================================================
+# UTILITIES (PRODUCTION)
+# =====================================================
+python-dateutil==2.8.2
+pytz==2023.3.post1
+django-timezone-field==6.1.0
+
+# =====================================================
+# PRODUCTION OPTIMIZATIONS
+# =====================================================
+django-cachalot==2.6.2                 # ORM caching
+django-silk==5.0.4                     # Production profiling
+django-compressor==4.4                 # Asset compression

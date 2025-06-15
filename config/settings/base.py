@@ -326,7 +326,7 @@ EMAIL_PORT = env('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = env('EMAIL_USE_TLS', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='E-Patrimoine OPRAG <noreply@oprag.ga>')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='SYGEP-OPRAG OPRAG <noreply@oprag.ga>')
 
 # Logging configuration avancée
 LOGGING = {
@@ -468,3 +468,7 @@ OPRAG_CONFIG = {
 # Créer les répertoires de logs s'ils n'existent pas
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
+
+# config/settings/base.py
+SITE_NAME = 'SYGEP-OPRAG'
+ADMIN_SITE_HEADER = 'SYGEP-OPRAG Administration'

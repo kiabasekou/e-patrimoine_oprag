@@ -58,8 +58,8 @@ def exporter_inventaire_complet(filters, email_utilisateur):
         # Envoyer l'email avec le fichier en pièce jointe
         send_mail(
             subject='Votre export d\'inventaire est prêt',
-            message=f'Bonjour {user.get_full_name()},\n\nVeuillez trouver ci-joint l\'export de l\'inventaire demandé.\n\nCordialement,\nL\'équipe e-patrimoine',
-            from_email='noreply@e-patrimoine.org',
+            message=f'Bonjour {user.get_full_name()},\n\nVeuillez trouver ci-joint l\'export de l\'inventaire demandé.\n\nCordialement,\nL\'équipe SYGEP-OPRAG',
+            from_email='noreply@SYGEP-OPRAG.org',
             recipient_list=[email_utilisateur],
             fail_silently=False,
             attachments=[

@@ -1,0 +1,77 @@
+# =====================================================
+# E-PATRIMOINE OPRAG - Development Requirements
+# =====================================================
+# Include base requirements
+-r requirements.txt
+
+# =====================================================
+# DEVELOPMENT TOOLS
+# =====================================================
+django-livereload-server==0.5.0        # Live reload
+watchdog==3.0.0                        # File system events
+werkzeug==3.0.1                        # WSGI utility
+
+# =====================================================
+# DEBUGGING & PROFILING
+# =====================================================
+django-querycount==0.8.3               # Query counting
+django-debug-toolbar-force==0.2        # Force debug toolbar
+line-profiler==4.1.2                   # Line-by-line profiling
+memory-profiler==0.61.0                # Memory profiling
+py-spy==0.3.14                         # Sampling profiler
+snakeviz==2.2.0                        # Profile visualization
+
+# =====================================================
+# TESTING TOOLS
+# =====================================================
+pytest-mock==3.12.0                    # Mocking
+pytest-asyncio==0.23.3                 # Async testing
+pytest-timeout==2.2.0                  # Test timeouts
+pytest-benchmark==4.0.0                # Performance testing
+pytest-html==4.1.1                     # HTML reports
+coverage-badge==1.1.0                  # Coverage badge
+locust==2.20.0                         # Load testing
+selenium==4.16.0                       # Browser automation
+pytest-selenium==4.1.0                 # Selenium integration
+
+# =====================================================
+# CODE ANALYSIS
+# =====================================================
+pylint==3.0.3                          # Code analysis
+pylint-django==2.5.5                   # Django plugin
+bandit==1.7.6                          # Security linting
+safety==3.0.1                          # Dependency check
+vulture==2.10                          # Dead code detection
+radon==6.0.1                           # Code complexity
+
+# =====================================================
+# DOCUMENTATION TOOLS
+# =====================================================
+sphinx==7.2.6                          # Documentation
+sphinx-rtd-theme==2.0.0                # ReadTheDocs theme
+autodoc==0.5.0                         # Auto documentation
+pydoc-markdown==4.8.2                  # Markdown docs
+
+# =====================================================
+# DATABASE TOOLS
+# =====================================================
+django-extensions==3.2.3               # Shell plus
+django-migration-linter==5.0.0         # Migration linting
+djlint==1.34.1                         # Template linting
+
+# =====================================================
+# DEVELOPMENT UTILITIES
+# =====================================================
+jupyter==1.0.0                         # Jupyter notebooks
+notebook==7.0.6                        # Jupyter notebook
+django-jupyter==0.1.0                  # Django integration
+bpython==0.24                          # Enhanced Python REPL
+ptpython==3.0.25                       # Better Python REPL
+rich==13.7.0                           # Rich terminal output
+
+# =====================================================
+# GIT HOOKS
+# =====================================================
+pre-commit==3.6.0                      # Git hooks
+commitizen==3.13.0                     # Commit conventions
+gitlint==0.19.1                        # Git commit linting
